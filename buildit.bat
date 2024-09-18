@@ -1,0 +1,2 @@
+pyinstaller protoApp.py --onefile
+
