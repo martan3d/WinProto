@@ -186,8 +186,8 @@ class ReceiverFrame ( wx.Frame ):
     # set the protothrottle base address, A-Z
 
     def handleProtoAddress(self):
-        baseaddress = protoad[self.PTID.GetValue()]
-        datapayload = chr(SETPROTOADDRESS) + baseaddress + '234567890123456789'
+        baseaddress = protad[self.PTID.GetValue()]
+        datapayload = chr(SETPROTOADDRESS) + chr(baseaddress) + '234567890123456789'
         self.Xbee.clear()
         self.Xbee.xbeeTransmitDataFrame(self.buildAddress(self.macAddress), datapayload)
         time.sleep(0.1)
@@ -420,8 +420,10 @@ class ReceiverFrame ( wx.Frame ):
         nval = "000" + notchval
         nval = nval[-3:]
 
+        print ('enabled', enabled, 'notch', notch)
+
         SETNOTCH = 50   ## 1        2        3       4         5         6         7         8         9        10        11         12
-        payload = chr(SETNOTCH) + enabled + notch + nval[0] + nval[1] + nval[2] + nlow[0] + nlow[1] + nlow[2] + nhigh[0] + nhigh[1] + nhigh[2] + '01234567'
+        payload = chr(SETNOTCH) + str(enabled) + str(notch) + nval[0] + nval[1] + nval[2] + nlow[0] + nlow[1] + nlow[2] + nhigh[0] + nhigh[1] + nhigh[2] + '01234567'
         print (payload)
         self.Xbee.clear()
         self.Xbee.xbeeTransmitDataFrame(self.buildAddress(self.macAddress), payload)
@@ -1626,7 +1628,7 @@ class ReceiverFrame ( wx.Frame ):
 
         bSizer9.Add( self.m_staticText68, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
 
-        notchEnable = self.maskFrame[12]
+        notchEnable = self.notchFrame[10]
 
         print ('notchEnable', notchEnable)
         print ('maskFrame', self.maskFrame)
