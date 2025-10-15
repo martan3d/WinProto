@@ -7,7 +7,7 @@
 ###########################################################################
 
 import wx
-#import wx.xrc
+import wx.xrc
 import time
 
 LOCOADR = 2000

@@ -1,6 +1,6 @@
 import time
 import wx
-#import wx.xrc
+import wx.xrc
 
 adprot = { 0x30 :'A', 0x31 :'B', 0x32 :'C', 0x33 :'D', 0x34 :'E', 0x35 :'F', 0x36 : 'G', 0x37 : 'H', 0x38 : 'I', 0x39 : 'J',
            0x3a : 'K', 0x3b : 'L', 0x3c : 'M', 0x3d : 'N', 0x3e : 'O', 0x3f : 'P', 0x40 : 'Q', 0x41 : 'R', 0x42 : 'S',
@@ -122,15 +122,10 @@ CKFUNC13  = 1013
 CKFUNC14  = 1014
 CKFUNC15  = 1015
 
-CKENABLE  = 1020
-
 CV1       = 101
 CV2       = 102
 CV3       = 103
 CV4       = 104
-
-RESET     = 2000
-
 
 # MESSAGE IDS for Receiver message side
 
@@ -143,7 +138,6 @@ SETSERVOCONFIG       = 47
 SETTIMEOUT           = 25
 SETOUTPUTSMODE       = 26
 SETSERVOMODE         = 48
-SETNOTCHCONFIG       = 50
 SETACCELERATION      = 54
 SETDECELERATION      = 55
 SETBRAKERATE         = 56
@@ -151,7 +145,6 @@ SETBRAKEFUNCTION     = 57
 FACTORYRESET         = 58
 SETNOTCHMASK         = 51
 SETDCCCVPACKET       = 16
-SETNOTCHENABLE       = 61
 
 ###########################################################################
 
@@ -186,8 +179,8 @@ class ReceiverFrame ( wx.Frame ):
     # set the protothrottle base address, A-Z
 
     def handleProtoAddress(self):
-        baseaddress = protad[self.PTID.GetValue()]
-        datapayload = chr(SETPROTOADDRESS) + chr(baseaddress) + '234567890123456789'
+        baseaddress = protoad[self.PTID.GetValue()]
+        datapayload = chr(SETPROTOADDRESS) + baseaddress + '234567890123456789'
         self.Xbee.clear()
         self.Xbee.xbeeTransmitDataFrame(self.buildAddress(self.macAddress), datapayload)
         time.sleep(0.1)
@@ -409,7 +402,7 @@ class ReceiverFrame ( wx.Frame ):
 
 
     def handleNotch(self, notch, notchhigh, notchlow, notchval):
-        enabled = self.notchenable
+        enabled = "1"
 
         nhigh = "000" + notchhigh
         nhigh = nhigh[-3:]
@@ -420,11 +413,8 @@ class ReceiverFrame ( wx.Frame ):
         nval = "000" + notchval
         nval = nval[-3:]
 
-        print ('enabled', enabled, 'notch', notch)
-
         SETNOTCH = 50   ## 1        2        3       4         5         6         7         8         9        10        11         12
-        payload = chr(SETNOTCH) + str(enabled) + str(notch) + nval[0] + nval[1] + nval[2] + nlow[0] + nlow[1] + nlow[2] + nhigh[0] + nhigh[1] + nhigh[2] + '01234567'
-        print (payload)
+        payload = chr(SETNOTCH) + enabled + notch + nval[0] + nval[1] + nval[2] + nlow[0] + nlow[1] + nlow[2] + nhigh[0] + nhigh[1] + nhigh[2] + '01234567'
         self.Xbee.clear()
         self.Xbee.xbeeTransmitDataFrame(self.buildAddress(self.macAddress), payload)
         time.sleep(0.1)
@@ -482,7 +472,7 @@ class ReceiverFrame ( wx.Frame ):
     ### Handle Notch Function Code checkboxes
 
     def setFunc(self, mask, maskval):
-        print ('setFunc mask', mask, maskval)
+        print ('mask', mask, maskval)
         payload = chr(SETNOTCHMASK) + chr(mask) + chr(maskval) + '45678901201234567'
         self.Xbee.clear()
         self.Xbee.xbeeTransmitDataFrame(self.buildAddress(self.macAddress), payload)
@@ -522,12 +512,10 @@ class ReceiverFrame ( wx.Frame ):
 
     def handleFunctionMask08(self):
         v = int(self.F08.GetValue())
-        print ('set08', v)
         self.setFunc(8, v)
 
     def handleFunctionMask09(self):
         v = int(self.F09.GetValue())
-        print ('set09', v)
         self.setFunc(9, v)
 
     def handleFunctionMask10(self):
@@ -553,20 +541,6 @@ class ReceiverFrame ( wx.Frame ):
     def handleFunctionMask15(self):
         v = int(self.F15.GetValue())
         self.setFunc(15, v)
-
-    def handleNotchEnable(self):
-        v = str(self.m_checkBox18.GetValue())
-        if v == 'True':
-           self.notchenable = 1
-        else:
-           self.notchenable = 0
-
-        print ('set Notch Enable', self.notchenable)
-        payload = chr(SETNOTCHENABLE) + chr(self.notchenable) + '345678901201234567'
-        self.Xbee.clear()
-        self.Xbee.xbeeTransmitDataFrame(self.buildAddress(self.macAddress), payload)
-        time.sleep(0.1)
-
 
     ##### CVs
 
@@ -599,13 +573,6 @@ class ReceiverFrame ( wx.Frame ):
         cvda = cvd[-4:]
         payload = chr(SETDCCCVPACKET) + cvad[0] + cvad[1] + cvad[2] + cvad[3] + cvda[0] + cvda[1] + cvda[2] + cvda[3] +'90123456789'
 
-        self.Xbee.clear()
-        self.Xbee.xbeeTransmitDataFrame(self.buildAddress(self.macAddress), payload)
-        time.sleep(0.1)
-
-    def sendReset(self):
-        print ('send reset')
-        payload = chr(FACTORYRESET) + '1234567890123456789'
         self.Xbee.clear()
         self.Xbee.xbeeTransmitDataFrame(self.buildAddress(self.macAddress), payload)
         time.sleep(0.1)
@@ -694,9 +661,7 @@ class ReceiverFrame ( wx.Frame ):
                                   CKFUNC12      : self.handleFunctionMask12,
                                   CKFUNC13      : self.handleFunctionMask13,
                                   CKFUNC14      : self.handleFunctionMask14,
-                                  CKFUNC15      : self.handleFunctionMask15,
-                                  CKENABLE      : self.handleNotchEnable,
-                                  RESET         : self.sendReset
+                                  CKFUNC15      : self.handleFunctionMask15
                                 }
 
         self.cvhandlers = { CV1      : self.handleCV1,
@@ -717,7 +682,6 @@ class ReceiverFrame ( wx.Frame ):
         self.macAddress   = mac
         self.Xbee         = xbee
         self.escMode      = "        "
-        self.notchenable  = '0'
 
         self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
         self.SetFont( wx.Font( 22, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString ) )
@@ -751,11 +715,6 @@ class ReceiverFrame ( wx.Frame ):
         bSizer102.Add( ( 75, 0), 1, wx.EXPAND, 5 )
 
         ########################################### PT ID
-
-        print (adprot)
-        print (self.dataFrame[11])
-
-
         adr = adprot[int(self.dataFrame[11])]
 
         self.PTID = wx.TextCtrl( self.m_scrolledWindow1, PTIDVALUE, adr, wx.DefaultPosition, wx.DefaultSize, style=wx.TE_RIGHT )
@@ -1625,24 +1584,12 @@ class ReceiverFrame ( wx.Frame ):
         self.m_staticText68 = wx.StaticText( self.m_scrolledWindow1, wx.ID_ANY, u"Consist Function Flags", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.m_staticText68.Wrap( -1 )
         self.m_staticText68.SetFont( wx.Font( 12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString ) )
-
         bSizer9.Add( self.m_staticText68, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
-
-        notchEnable = self.notchFrame[10]
-
-        print ('notchEnable', notchEnable)
-        print ('maskFrame', self.maskFrame)
-
-        self.m_checkBox18 = wx.CheckBox( self.m_scrolledWindow1, CKENABLE, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer9.Add( self.m_checkBox18, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
-        self.m_checkBox18.SetValue(notchEnable)
-        self.m_checkBox18.Bind(wx.EVT_CHECKBOX, self.OnCheck)
-
         bSizer80 = wx.BoxSizer( wx.HORIZONTAL )
 
         lmask = self.maskFrame[10]
 
-        print ('display lmask lo', lmask)
+        print ('lmask', lmask)
         self.F00 = wx.CheckBox( self.m_scrolledWindow1, CKFUNC00, u"F00", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.F00.SetMinSize( wx.Size( 38,-1 ) )
         bSizer80.Add( self.F00, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
@@ -1695,7 +1642,6 @@ class ReceiverFrame ( wx.Frame ):
         bSizer801 = wx.BoxSizer( wx.HORIZONTAL )
 
         lmask = self.maskFrame[11]
-        print ('display lmask hi', lmask)
         self.F08 = wx.CheckBox( self.m_scrolledWindow1, CKFUNC08, u"F08", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.F08.SetMinSize( wx.Size( 38,-1 ) )
         bSizer801.Add( self.F08, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
@@ -1877,23 +1823,17 @@ class ReceiverFrame ( wx.Frame ):
         self.m_staticline51 = wx.StaticLine( self.m_scrolledWindow1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
         bSizer9.Add( self.m_staticline51, 0, wx.EXPAND |wx.ALL, 5 )
 
-        ## reset start
+        #self.m_staticText40 = wx.StaticText( self.m_scrolledWindow1, wx.ID_ANY, u"Factory Reset", wx.DefaultPosition, wx.DefaultSize, 0 )
+        #self.m_staticText40.Wrap( -1 )
+        #bSizer9.Add( self.m_staticText40, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+        #bSizer37 = wx.BoxSizer( wx.VERTICAL )
 
-        self.m_staticText40 = wx.StaticText( self.m_scrolledWindow1, wx.ID_ANY, u"Factory Reset", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_staticText40.Wrap( -1 )
-        bSizer9.Add( self.m_staticText40, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
-        bSizer37 = wx.BoxSizer( wx.VERTICAL )
-
-        bSizer37.SetMinSize( wx.Size( -1,10 ) )
-        self.FactoryReset = wx.Button( self.m_scrolledWindow1, RESET, u"Reset", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer37.Add( self.FactoryReset, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
-        self.FactoryReset.Bind(wx.EVT_BUTTON, self.OnCheck)
-
-        bSizer9.Add( bSizer37, 0, wx.EXPAND, 5 )
-
-        ## reset end
+        #bSizer37.SetMinSize( wx.Size( -1,10 ) )
+        #self.FactoryReset = wx.Button( self.m_scrolledWindow1, wx.ID_ANY, u"Reset", wx.DefaultPosition, wx.DefaultSize, 0 )
+        #bSizer37.Add( self.FactoryReset, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
 
 
+        #bSizer9.Add( bSizer37, 0, wx.EXPAND, 5 )
         bSizer8.Add( bSizer9, 0, wx.ALIGN_CENTER_HORIZONTAL, 0 )
         self.m_scrolledWindow1.SetSizer( bSizer8 )
         self.m_scrolledWindow1.Layout()

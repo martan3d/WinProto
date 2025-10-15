@@ -8,7 +8,7 @@ from rx import *
 from OPT import *
 
 TITLE = "Protothrottle Xbee Network"
-VERSION = "1.0.1"
+VERSION = "1.0.0"
 
 nodelist = []
 
@@ -259,7 +259,7 @@ class MainWindow(scrolled.ScrolledPanel):
         address = lookUp[n]
 
         messageType = self.getData(address, RETURNTYPE, nodeDict)
-        #print ('messageType', messageType)
+        print ('messageType', messageType)
 
         if messageType == DIRECTEDRESPONSE:
            msgData = nodeDict[address][1]
@@ -283,9 +283,6 @@ class MainWindow(scrolled.ScrolledPanel):
               self.getData(address, GETNOTCHMASKS, nodeMasks)
               maskData = nodeMasks[address][1]
 
-              print ('----- msgData')
-              print (msgData)
-
               nFrame = ReceiverFrame(self, title="{}".format(nodeid), size=(600,800), mac=address, data=msgData, pdata=physicsData, ndata=notchData, mdata=maskData, xbee=self.Xbee)
               nFrame.Show(True)
               return
@@ -304,7 +301,7 @@ class MainWindow(scrolled.ScrolledPanel):
 
     #---------------------------------------------------------------------
     def processReceiver(self, address):
-        #print ("process receiver")
+        print ("process receiver")
         self.getMainData(address)
 
 
@@ -336,7 +333,7 @@ class MainWindow(scrolled.ScrolledPanel):
         while(1):
             nodedata = self.pullPacket()
             msgtype = nodedata[0]
-            #print ('getData', nodedata)
+            print ('getData', nodedata)
 
             if msgtype == DIRECTEDRESPONSE:
                nodeid = nodeDict[address][0]
@@ -358,7 +355,7 @@ class MainWindow(scrolled.ScrolledPanel):
 
         while(1):
             nodedata = self.pullPacket()
-            #print ('nodedata from scan', nodedata)
+            print ('nodedata from scan', nodedata)
             msgtype = nodedata[0]
 
             if msgtype == DISCOVERYRESPONSE:
@@ -421,7 +418,7 @@ class MainWindow(scrolled.ScrolledPanel):
                  return [INTERNALRESPONSE, None, None, None]
 
            if msgtype == 137:                    # Log ACKs from any outgoing messages
-              #print ("ACK")
+              print ("ACK")
               return [ACK, None, None, None]
 
            return [UNKNOWN, None, None, data]
