@@ -2,6 +2,10 @@
 WinProto is the latest incarnation of the Python Programmer for the ProtoThrottle Receiver
 
 This program REQUIRES a USB Xbee 'dongle' device to talk to the Protothrottle and your android device must support OTG on the USB port. The dongle MUST use the Silicon Labs CP210x chipset. The dongle H/W can be found on Amazon, search for 'WaveShare Xbee'.
+To use the dongle with your PC you will need the Silicon labs drivers. They can be found on the silicon labs web site or you can download them from here:
+
+- https://www.pololu.com/file/0J14/pololu-cp2102-windows-220616.zip
+- https://www.pololu.com/docs/0J7/2
 
 The Xbee chip for this can be ordered from Sparkfun.com.
 
